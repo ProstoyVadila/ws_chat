@@ -28,20 +28,40 @@ fn App() -> Html {
     let mut cloned_messages = messages.clone();
     use_effect_with(ws.message.clone(), move |ws_msg| {
         if let Some(msg) = &**ws_msg {
-            let websocket_message: WebSocketMessage = serde_json::from_str(msg).unwrap();
+            let websocket_message: WebSocketMessage = match serde_json::from_str(msg) {
+                Ok(msg) => msg,
+                Err(err) => {
+                    // TODO: add logs
+                    println!("Error while deserializing ws message {}", err);
+                    return;
+                }
+            };
             match websocket_message.message_type {
                 WebSocketMessageType::NewMessage | WebSocketMessageType::System => {
-                    let msg = websocket_message.message.expect("Missing message payload");
-                    cloned_messages.push(msg);
-                    messages_handle.set(cloned_messages);
+                    if let Some(msg) = websocket_message.message {
+                        cloned_messages.push(msg);
+                        messages_handle.set(cloned_messages);
+                    } else {
+                        // TODO: add logs
+                        println!("Missing message payload");
+                    }
                 },
                 WebSocketMessageType::UserList => {
-                    let users = websocket_message.users.expect("Missing users payload");
-                    users_handle.set(users);
+                    if let Some(users) = websocket_message.users {
+                        users_handle.set(users);
+                    } else {
+                        // TODO: add logs
+                        println!("Missing users payload");
+                    }
                 },
                 WebSocketMessageType::UsernameChange => {
-                    let username = websocket_message.username.expect("Missing username payload");
-                    username_handle.set(username);
+                    if let Some(username) = websocket_message.username {
+                        username_handle.set(username);
+                    } else {
+                        // TODO: add logs
+                        println!("Missing username payload");
+                        return; 
+                    }
                 },
             }
         }
