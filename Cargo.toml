@@ -1,0 +1,11 @@
+[workspace]
+members = [
+    "backend",
+    "frontend",
+    "common",
+]
+
+[workspace.dependencies]
+serde = "1.0"
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
