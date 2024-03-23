@@ -7,7 +7,7 @@ use rocket::{
 use rocket_ws::{Channel, Message, WebSocket};
 
 use crate::chat_room::ChatRoom;
-
+use crate::metrics::{WS_NEW_CONNECTIONS_TOTAL, WS_CONNECTIONS_TOTAL};
 
 static USER_ID_COUNTER: AtomicUsize = AtomicUsize::new(1);
 
@@ -19,6 +19,8 @@ pub fn chat<'r>(ws: WebSocket, state: &'r State<ChatRoom>) -> Channel<'r> {
         let (ws_sink, mut ws_stream) = stream.split();
 
         state.add(user_id, ws_sink).await;
+        WS_NEW_CONNECTIONS_TOTAL.inc();
+        WS_CONNECTIONS_TOTAL.inc();
     
         while let Some(msg) = ws_stream.next().await {
             if let Ok(msg_content) = msg {
@@ -35,6 +37,7 @@ pub fn chat<'r>(ws: WebSocket, state: &'r State<ChatRoom>) -> Channel<'r> {
             }
         }
         state.flush(user_id).await;
+        WS_CONNECTIONS_TOTAL.dec();
     
         Ok(())
     }))
