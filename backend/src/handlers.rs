@@ -7,7 +7,7 @@ use rocket::{
 use rocket_ws::{Channel, Message, WebSocket};
 use log;
 
-use crate::chat_room::ChatRoom;
+use crate::chat::ChatRoom;
 use crate::metrics::{WS_NEW_CONNECTIONS_TOTAL, WS_CONNECTIONS_TOTAL};
 
 static USER_ID_COUNTER: AtomicUsize = AtomicUsize::new(1);

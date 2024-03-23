@@ -1,7 +1,7 @@
 use rocket;
 use env_logger;
 
-mod chat_room;
+mod chat;
 mod handlers;
 mod metrics;
 
@@ -18,7 +18,7 @@ async fn main() {
             handlers::chat,
         ])
         .mount("/metrics", prom)
-        .manage(chat_room::ChatRoom::default())
+        .manage(chat::ChatRoom::default())
         .launch()
         .await;
 
