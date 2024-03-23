@@ -1,13 +1,14 @@
 
 use std::collections::HashMap;
 
-use common::{WebSocketMessage, WebSocketMessageType};
 use rocket::{
     futures::{stream::SplitSink, SinkExt}, 
     tokio::sync::Mutex,
 };
 use rocket_ws::{Message, stream::DuplexStream};
+use log;
 
+use common::{WebSocketMessage, WebSocketMessageType};
 
 
 pub enum UserStatus {
@@ -52,6 +53,7 @@ impl ChatRoom {
         let new_msg: WebSocketMessage = match serde_json::from_str(msg.as_str()) {
             Ok(new_msg) => new_msg,
             Err(_) => {
+                log::warn!("Cannot deserialize json message");
                 return None;
             }
         };
@@ -76,8 +78,7 @@ impl ChatRoom {
         let user_conn = match conns.get_mut(&user_id) {
             Some(conn) => conn,
             _ => {
-                // TODO: add log
-                println!("Cannot find a user");
+                log::warn!("Cannot find a user");
                 return;
             }
         };
@@ -104,8 +105,7 @@ impl ChatRoom {
             let msg = WebSocketMessage::from_username(user_conn.username.clone()).to_string();
             let _ = user_conn.sink.send(Message::Text(msg)).await;
         } else {
-            // TODO: add log 
-            println!("Cannot find a user {}", user_id);
+            log::warn!("Cannot find a user {}", user_id);
         }
     }
 
@@ -120,8 +120,7 @@ impl ChatRoom {
         let mut chat_msg = match msg.message {
             Some(msg) => msg,
             _ => {
-                // TODO: add log
-                println!("Message to broadcast from user {} is empty", user_id);
+                log::warn!("Message to broadcast from user {} is empty", user_id);
                 return;
             }
         };
@@ -131,8 +130,7 @@ impl ChatRoom {
             let user_conn = match conns.get(&user_id) {
                 Some(conn) => conn,
                 _ => {
-                    // TODO: add log
-                    println!("Cannot find a user {}", user_id);
+                    log::warn!("Cannot find a user {}", user_id);
                     return;
                 }
             };
@@ -165,8 +163,7 @@ impl ChatRoom {
                     if let Some(new_username) = new_msg.username {
                         self.change_username(user_id, new_username.clone()).await;
                     } else {
-                        // TODO: add log
-                        println!("New username is empty")
+                        log::warn!("New username is empty");
                     }
 
                 },
@@ -174,7 +171,7 @@ impl ChatRoom {
                     self.broadcast_users_list().await;
                 },
                 WebSocketMessageType::System => {
-                    // TODO: add logic
+                    log::debug!("not implemented");
                 },
             }
         } else {
@@ -188,8 +185,7 @@ impl ChatRoom {
             let user_conn = match conns.remove(&user_id) {
                 Some(conn) => conn,
                 _ => {
-                    // TODO: add log
-                    println!("Cannot find a user {} to remove", user_id);
+                    log::warn!("Cannot find a user {} to remove", user_id);
                     return;
                 }
             };

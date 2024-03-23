@@ -2,7 +2,7 @@
 
 backend:
 	@echo "starting backend"
-	@cargo run --bin backend
+	@RUST_LOG=info cargo run --bin backend
 
 frontend:
 	@echo "starting frontend"

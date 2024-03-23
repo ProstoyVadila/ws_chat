@@ -5,6 +5,7 @@ use rocket::{
     State
 };
 use rocket_ws::{Channel, Message, WebSocket};
+use log;
 
 use crate::chat_room::ChatRoom;
 use crate::metrics::{WS_NEW_CONNECTIONS_TOTAL, WS_CONNECTIONS_TOTAL};
@@ -32,6 +33,8 @@ pub fn chat<'r>(ws: WebSocket, state: &'r State<ChatRoom>) -> Channel<'r> {
                     Message::Pong(_) => {},
                     _ => {
                         // Unsupported
+                        log::warn!("Unsupported message type {}", msg_content);
+
                     }
                 }
             }
